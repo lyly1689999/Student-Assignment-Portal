@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធផ្ញើកិច្ចការផ្ទះ v5</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kantumruy Pro', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 p-4">
+    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden p-8 border border-gray-100">
+        <h2 class="text-2xl font-bold text-indigo-700 mb-1 text-center">ផ្ញើកិច្ចការផ្ទះ</h2>
+        <p class="text-center text-gray-400 mb-6 text-xs uppercase tracking-widest">Student Assignment Portal</p>
+        
+        <form id="homeworkForm" class="space-y-4">
+            <div>
+                <label class="block text-gray-600 font-semibold mb-1 text-sm">មេរៀន/កិច្ចការផ្ទះ</label>
+                <select id="homework_type" class="w-full border-2 border-gray-50 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none transition bg-gray-50 text-gray-700">
+                    <option value="កិច្ចការផ្ទះទី១">កិច្ចការផ្ទះទី១</option>
+                    <option value="កិច្ចការផ្ទះទី២">កិច្ចការផ្ទះទី២</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-gray-600 font-semibold mb-1 text-sm">ឈ្មោះសិស្ស</label>
+                <input type="text" id="student_name" placeholder="បញ្ចូលឈ្មោះពេញ" class="w-full border-2 border-gray-50 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none transition bg-gray-50" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-600 font-semibold mb-1 text-sm">ថ្នាក់</label>
+                    <select id="student_class" class="w-full border-2 border-gray-50 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none transition bg-gray-50 text-gray-700">
+                        <option value="IT1">IT1</option>
+                        <option value="IT2">IT2</option>
+                        <option value="IT3">IT3</option>
+                        <option value="IT4">IT4</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-600 font-semibold mb-1 text-sm">ភេទ</label>
+                    <div class="flex gap-4 bg-gray-50 p-3 rounded-xl border-2 border-gray-50">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="gender" value="ប្រុស" class="w-4 h-4 text-indigo-600" checked>
+                            <span class="ml-1 text-sm text-gray-600">ប្រុស</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="gender" value="ស្រី" class="w-4 h-4 text-pink-600">
+                            <span class="ml-1 text-sm text-gray-600">ស្រី</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-600 font-semibold mb-1 text-sm">ភ្ជាប់កិច្ចការ (រូបភាព ឬ PDF)</label>
+                <div class="relative border-2 border-dashed border-indigo-100 rounded-xl p-6 hover:border-indigo-400 transition text-center bg-indigo-50/20">
+                    <input type="file" id="file_input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,.pdf" required>
+                    <div id="file_label" class="text-sm text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-1 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-xs">ចុចដើម្បីជ្រើសរើសឯកសារ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg py-2 px-4">
+                <p class="text-[11px] text-gray-500 text-center">
+                    កាលបរិច្ឆេទផ្ញើ៖ <span id="currentDateTime" class="font-medium text-indigo-600"></span>
+                </p>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 shadow-lg transform active:scale-95 transition-all">
+                ផ្ញើកិច្ចការ
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // មុខងារទាញយកកាលបរិច្ឆេទតាមទម្រង់ 4/28/2026, 10:51:13 AM
+        function getFormattedDate() {
+            const now = new Date();
+            return now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: true
+            });
+        }
+
+        // បង្ហាញម៉ោងដើររៀងរាល់វិនាទី
+        setInterval(() => {
+            document.getElementById('currentDateTime').innerText = getFormattedDate();
+        }, 1000);
+
+        const fileInput = document.getElementById('file_input');
+        const fileLabel = document.getElementById('file_label');
+        
+        fileInput.onchange = () => {
+            if (fileInput.files.length > 0) {
+                fileLabel.innerHTML = `
+                    <div class="text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mb-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-xs font-bold">${fileInput.files[0].name}</span>
+                    </div>`;
+            }
+        };
+
+        const form = document.getElementById('homeworkForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = "កំពុងផ្ញើទិន្នន័យ...";
+
+            const finalDate = getFormattedDate();
+
+            const data = {
+                homework: document.getElementById('homework_type').value,
+                name: document.getElementById('student_name').value,
+                class: document.getElementById('student_class').value,
+                gender: document.querySelector('input[name="gender"]:checked').value,
+                submittedAt: finalDate,
+                fileName: fileInput.files[0].name
+            };
+
+            // ផ្ញើទៅ Telegram
+            tg.sendData(JSON.stringify(data));
+            
+            setTimeout(() => {
+                tg.close();
+            }, 800);
+        });
+    </script>
+</body>
+</html>
